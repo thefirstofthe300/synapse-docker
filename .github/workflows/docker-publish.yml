@@ -30,6 +30,13 @@ jobs:
       id-token: write
 
     steps:
+      - id: synapse
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: matrix-org
+          repo: synapse
+          excludes: prerelease, draft
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -71,8 +78,9 @@ jobs:
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
+          build-args: SYNAPSE_VERSION=${{steps.synapse.outputs.release}}
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/thefirstofthe300/synapse-docker:${{ steps.synapse.outputs.release }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # Sign the resulting Docker image digest except on PRs.
